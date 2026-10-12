@@ -1,0 +1,2 @@
+# Sentinel-SOC-Lab-Detecting-Triaging-and-Hunting-Attacks-with-Microsoft-Sentinel-and-Defender-XDR
+Built an Azure SOC lab for SC-200 practice: Windows Server 2022 VM streamed via AMA/DCR into Sentinel. Wrote two MITRE-mapped KQL analytics rules (T1110 brute force, T1136.001 new admin), simulated both attacks, triaged incidents in Defender XDR, and pivoted via Advanced hunting (4720/4732 by SID). Skills: Sentinel, MDE, KQL, ATT&amp;CK.
