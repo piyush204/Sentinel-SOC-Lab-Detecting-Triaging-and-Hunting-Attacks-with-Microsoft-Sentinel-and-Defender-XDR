@@ -28,8 +28,11 @@ flowchart LR
 | Endpoint protection | Defender for Servers Plan 2, host onboarded to Defender for Endpoint |
 | Access control | RDP allowed from a single source IP through a dedicated NSG rule |
 
-![Log pipeline: VM to data collection rule to workspace](screenshots/W1-01b.png)
-![Windows security events arriving in the workspace](screenshots/W1-02.png)
+<img width="1338" height="615" alt="Screenshot W1-01b this diagram, taken now  It shows the full pipeline from the VM through the rule to the workspace" src="https://github.com/user-attachments/assets/0567bfa3-9dad-4a99-a2f2-9a685430cf48" />
+
+<img width="907" height="558" alt="Screenshot W1-02 both query results" src="https://github.com/user-attachments/assets/64bb67c3-698f-40c2-90d1-d2e146900d16" />
+<img width="1196" height="686" alt="Screenshot W1-02 both query results" src="https://github.com/user-attachments/assets/1994e904-f19a-4048-bb71-5eeeb29676ec" />
+
 
 ---
 
@@ -46,8 +49,10 @@ I wrote two scheduled analytics rules, each with MITRE mapping, entity mapping (
 | SC200 - Brute force failed logons | Medium | T1110 | 5 or more failed logons (event 4625) for the same account on a host, every 5 minutes over a 10-minute window |
 | SC200 - New local admin created | High | T1136.001 | Local account creation (4720) or a member added to the local Administrators group (4732) |
 
-![Brute force rule configuration](screenshots/W1-04.png)
-![New local admin rule: entity mapping](screenshots/W1-06.png)
+<img width="1732" height="893" alt="Screenshot W1-04 take it after the fix  Capture the review page showing Entity 1Host and Entity 2Account, plus the query and schedule1" src="https://github.com/user-attachments/assets/05d1084b-468b-457d-a45b-3234db384414" />
+
+<img width="1377" height="936" alt="w1-06 reviw page 1" src="https://github.com/user-attachments/assets/987cc766-d0c2-4b7c-b15d-5d6b8a4e5bbf" />
+
 
 ### 3. Microsoft Defender for Endpoint integration
 I enabled Defender for Servers (Plan 2) as the only paid plan, and the `MDE.Windows` extension deployed to the VM. The host appears in Device Inventory as a Windows Server. I created a device group, `SC200-Lab-Servers`, with the rule *Name starts with `SC200`* and the remediation level **Semi - Approval required for all folders**, so any Defender remediation needs analyst approval. I confirmed membership with `DeviceInfo`, and alerts now show the device with its group label.
@@ -82,7 +87,8 @@ SecurityEvent
 | summarize Failures = count() by TargetUserName, Computer
 ```
 
-![Alert evidence: 8 failures for labfake](screenshots/W2-03d.png)
+<img width="1517" height="590" alt="W2-03b" src="https://github.com/user-attachments/assets/b4c48375-266a-48fe-9003-0cae1e6ff4b4" />
+
 ![Attack story and incident graph](screenshots/W2-04.png)
 ![Raw 4625 events confirmed in the workspace](screenshots/W2-03b.png)
 ![Incident closed with classification](screenshots/W1-05c.png)
@@ -108,8 +114,10 @@ SecurityEvent
 | order by TimeGenerated desc
 ```
 
-![Alert page with host and account entities](screenshots/W1-07.png)
-![Evidence row: event 4732 on Administrators](screenshots/W1-07a.png)
+<img width="1496" height="821" alt="W1-07" src="https://github.com/user-attachments/assets/3acde556-c749-4382-8034-b2647acdf71a" />
+
+<img width="1033" height="497" alt="W1-07a" src="https://github.com/user-attachments/assets/d844ff93-f85c-4ff8-b2fc-c144c9a7d1e4" />
+
 ![4720 and 4732 events with SID fields](screenshots/W1-07c.png)
 
 ---
