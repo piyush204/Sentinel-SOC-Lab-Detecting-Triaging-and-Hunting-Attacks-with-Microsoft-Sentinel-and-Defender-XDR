@@ -1,0 +1,71 @@
+// Sentinel SOC Lab: KQL used in this project
+// Tables in Sentinel Logs use TimeGenerated. Defender Advanced hunting (Device*) tables use Timestamp.
+
+// ============================================================
+// 1. Data health: is the pipeline delivering logs?
+// ============================================================
+
+// Any ten security events
+SecurityEvent
+| take 10
+
+// When did the agent last report in?
+Heartbeat
+| summarize LastSeen = max(TimeGenerated) by Computer
+
+// ============================================================
+// 2. Detection rule logic
+// ============================================================
+
+// Rule 1: SC200 - Brute force failed logons (every 5 min, 10 min lookback)
+SecurityEvent
+| where EventID == 4625
+| summarize Failures = count() by TargetUserName, Computer
+| where Failures >= 5
+
+// Rule 2: SC200 - New local admin created (every 5 min, 10 min lookback)
+SecurityEvent
+| where EventID == 4720 or (EventID == 4732 and TargetUserName == "Administrators")
+| project TimeGenerated, Computer, EventID, Activity, TargetUserName, SubjectUserName
+
+// ============================================================
+// 3. Investigation
+// ============================================================
+
+// Raw failed sign-ins (event 4625)
+SecurityEvent
+| where EventID == 4625
+| project TimeGenerated, Computer, TargetUserName, LogonType, IpAddress
+| order by TimeGenerated desc
+
+// Failures per account in the last 30 minutes
+SecurityEvent
+| where TimeGenerated > ago(30m)
+| where EventID == 4625
+| summarize Failures = count() by TargetUserName, Computer
+
+// Account created (4720) and group membership changes (4732)
+SecurityEvent
+| where EventID in (4720, 4732)
+| project TimeGenerated, Computer, EventID, Activity, TargetUserName, SubjectUserName
+| order by TimeGenerated desc
+
+// SID join: which account was added to Administrators, and by whom?
+let created = SecurityEvent
+    | where EventID == 4720
+    | project NewAccount = TargetUserName, Sid = TargetSid;
+SecurityEvent
+| where EventID == 4732 and TargetUserName == "Administrators"
+| project AddedTime = TimeGenerated, Computer, ActedBy = SubjectUserName, Sid = MemberSid
+| join kind=inner created on Sid
+| project AddedTime, Computer, ActedBy, NewAccount, Sid
+
+// ============================================================
+// 4. Defender for Endpoint (run in Advanced hunting)
+// ============================================================
+
+// Is the device onboarded, and is it in the right device group?
+DeviceInfo
+| where Timestamp > ago(30d)
+| summarize arg_max(Timestamp, *) by DeviceName
+| project DeviceName, MachineGroup, OnboardingStatus, OSPlatform
